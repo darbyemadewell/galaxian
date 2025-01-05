@@ -133,12 +133,18 @@ function determineFallingDirection(currentDirection) {
 }
 
 function marchAliensLeftRight() {
+    currentAlienMarch += -1 * alienMarchDirection * DOUBLE_SPEED * viewDelta;
+    alienMarchDirection = determineMarchingDirection(currentAlienMarch, alienMarchDirection);
+
+    var checkAlienMarch = 0;
     for(var index=1; index<16; index++) {
         if(isFalling(index) === false) {
-            currentAlienMarch = inputTriangles[index].translation[0];
+            checkAlienMarch = inputTriangles[index].translation[0];
             break;
         }
     }
+
+    console.log(currentAlienMarch, checkAlienMarch);
 
     for(var index = 1; index <= 16; index++) {
         if(isFalling(index) === false && !isEliminated(index)) {
@@ -146,7 +152,6 @@ function marchAliensLeftRight() {
                 inputTriangles[index].translation = vec3.fromValues(currentAlienMarch,0,0);
                 alienAnimationDirections[index] = null;
             }
-            alienMarchDirection = determineMarchingDirection(currentAlienMarch, alienMarchDirection);
             translateModelRightLeft(index, alienMarchDirection);
             inputTriangles[index].scale = !inputTriangles[index].scale;
         } 
