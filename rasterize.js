@@ -61,9 +61,6 @@ var projectileAnimationIntervals = [];
 var spaceBarEnabled = true;
 var alienProjectileEnabled = [];
 
-// interesting output
-var interesting = false;
-
 // ASSIGNMENT HELPER FUNCTIONS
 
 // get the JSON file from the passed URL
@@ -144,9 +141,6 @@ function marchAliensLeftRight() {
             break;
         }
     }
-
-    console.log(currentAlienMarch, checkAlienMarch);
-
     for(var index = 1; index <= 16; index++) {
         if(isFalling(index) === false && !isEliminated(index)) {
             if(isFalling(index) === false && alienAnimationDirections[index] !== null) {
@@ -225,9 +219,6 @@ function incrementFall(index) {
     alienAnimationDirections[index] = determineFallingDirection(alienAnimationDirections[index])
     translateModelRightLeft(index, alienAnimationDirections[index], HALF_SPEED);
     translateModelUpDown(index, DOWN, HALF_SPEED);
-    if(interesting) {
-        rotateModel(index,Up,1);
-    }
 
     // falling projectiles
     if((inputTriangles[index].center[1] + inputTriangles[index].translation[1] < 0.5) && alienProjectileEnabled[index]) {
@@ -283,13 +274,14 @@ function incrementProjectileUp(projectileIndex) {
             inputTriangles[index].hitsTaken++;
             clearInterval(projectileAnimationIntervals[projectileIndex]);
             inputTriangles[projectileIndex].translation = vec3.fromValues(0,0,0);
-            if(interesting) {
-                if(inputTriangles[index].hitsTaken >= inputTriangles[index].hitsNeeded) {
-                    eliminateAlien(index);
-                }
-            } else {
+            // TODO: Rework multiple hits required
+            // if(interesting) {
+            //     if(inputTriangles[index].hitsTaken >= inputTriangles[index].hitsNeeded) {
+            //         eliminateAlien(index);
+            //     }
+            // } else {
                 eliminateAlien(index);
-            }
+            // }
         }
     }
 
@@ -350,14 +342,6 @@ function isProjectileAvailable(projectileIndex) {
 }
 
 function eliminateAlien(index) {
-    const randomNumber = getRandomIntInclusive(0,1);
-    if(interesting && randomNumber === 0) {
-        console.log("eliminate 2");
-        inputTriangles[index-1].eliminated = true;
-        clearInterval(alienAnimationIntervals[index-1]);
-        alienAnimationDirections[index-1] = null;
-        inputTriangles[index-1].translation = vec3.fromValues(0, -10, 0);
-    }
     inputTriangles[index].eliminated = true;
     clearInterval(alienAnimationIntervals[index]);
     alienAnimationDirections[index] = null;
@@ -380,11 +364,6 @@ function handleKeyDown(event) {
                     spaceBarEnabled = true;
                 }, 500);
             }
-        case "Digit1": 
-        if (event.getModifierState("Shift")) {
-            interesting = true;
-            console.log(interesting);
-        }
     }
 }
 
@@ -468,7 +447,7 @@ function setupWebGL() {
      } // end catch
 } // end setupWebGL
 
-var listOfTextures = ["sprites/Ship_1.png", "sprites/Ship_5.png", "spr_bullet_3.png", "sprites/Ship_2.png"];
+var listOfTextures = ["sprites/Ship_1.png", "sprites/Ship_5.png", "spr_bullet_3.png", "sprites/Ship_3.png"];
 
 //load textures, pixels at first with actual models being loded in
 function loadTextures() {
@@ -968,84 +947,84 @@ data = `[
       "triangles": [[0,1,2],[2,3,0]]
     },
     {
-      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.1,0.1,0.1], "specular": [0.3,0.3,0.3], "n":1, "alpha": 1, "texture": "sprites/Ship_2.png"}, 
+      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.1,0.1,0.1], "specular": [0.3,0.3,0.3], "n":1, "alpha": 1, "texture": "sprites/Ship_3.png"}, 
       "vertices": [[1.025, 0.6, 0.65],[1.025, 0.8, 0.65],[1.225,0.8,0.65],[1.225,0.6,0.65]],
       "normals": [[0, 0, -1],[0, 0, -1],[0, 0, -1],[0, 0, -1]],
       "uvs": [[0,0], [0,1], [1,1], [1,0]],
       "triangles": [[0,1,2],[2,3,0]]
     },
     {
-      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_2.png"}, 
+      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_3.png"}, 
       "vertices": [[0.775, 0.6, 0.65],[0.775, 0.8, 0.65],[0.975,0.8,0.65],[0.975,0.6,0.65]],
       "normals": [[0, 0, -1],[0, 0, -1],[0, 0, -1],[0, 0, -1]],
       "uvs": [[0,0], [0,1], [1,1], [1,0]],
       "triangles": [[0,1,2],[2,3,0]]
     },
     {
-      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_2.png"}, 
+      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_3.png"}, 
       "vertices": [[0.525, 0.6, 0.65],[0.525, 0.8, 0.65],[0.725,0.8,0.65],[0.725,0.6,0.65]],
       "normals": [[0, 0, -1],[0, 0, -1],[0, 0, -1],[0, 0, -1]],
       "uvs": [[0,0], [0,1], [1,1], [1,0]],
       "triangles": [[0,1,2],[2,3,0]]
     },
     {
-      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_2.png"}, 
+      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_3.png"}, 
       "vertices": [[0.275, 0.6, 0.65],[0.275, 0.8, 0.65],[0.475,0.8,0.65],[0.475,0.6,0.65]],
       "normals": [[0, 0, -1],[0, 0, -1],[0, 0, -1],[0, 0, -1]],
       "uvs": [[0,0], [0,1], [1,1], [1,0]],
       "triangles": [[0,1,2],[2,3,0]]
     },
     {
-      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_2.png"}, 
+      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_3.png"}, 
       "vertices": [[0.025, 0.6, 0.65],[0.025, 0.8, 0.65],[0.225,0.8,0.65],[0.225,0.6,0.65]],
       "normals": [[0, 0, -1],[0, 0, -1],[0, 0, -1],[0, 0, -1]],
       "uvs": [[0,0], [0,1], [1,1], [1,0]],
       "triangles": [[0,1,2],[2,3,0]]
     },
     {
-      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_2.png"}, 
+      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_3.png"}, 
       "vertices": [[-0.225, 0.6, 0.65],[-0.225, 0.8, 0.65],[-0.025,0.8,0.65],[-0.025,0.6,0.65]],
       "normals": [[0, 0, -1],[0, 0, -1],[0, 0, -1],[0, 0, -1]],
       "uvs": [[0,0], [0,1], [1,1], [1,0]],
       "triangles": [[0,1,2],[2,3,0]]
     },
     {
-      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_2.png"}, 
+      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_3.png"}, 
       "vertices": [[1.025, 0.85, 0.65],[1.025, 1.05, 0.65],[1.225,1.05,0.65],[1.225,0.85,0.65]],
       "normals": [[0, 0, -1],[0, 0, -1],[0, 0, -1],[0, 0, -1]],
       "uvs": [[0,0], [0,1], [1,1], [1,0]],
       "triangles": [[0,1,2],[2,3,0]]
     },
     {
-      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_2.png"}, 
+      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_3.png"}, 
       "vertices": [[0.775, 0.85, 0.65],[0.775, 1.05, 0.65],[0.975,1.05,0.65],[0.975,0.85,0.65]],
       "normals": [[0, 0, -1],[0, 0, -1],[0, 0, -1],[0, 0, -1]],
       "uvs": [[0,0], [0,1], [1,1], [1,0]],
       "triangles": [[0,1,2],[2,3,0]]
     },
     {
-      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_2.png"}, 
+      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_3.png"}, 
       "vertices": [[0.525, 0.85, 0.65],[0.525, 1.05, 0.65],[0.725,1.05,0.65],[0.725,0.85,0.65]],
       "normals": [[0, 0, -1],[0, 0, -1],[0, 0, -1],[0, 0, -1]],
       "uvs": [[0,0], [0,1], [1,1], [1,0]],
       "triangles": [[0,1,2],[2,3,0]]
     },
     {
-      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_2.png"}, 
+      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_3.png"}, 
       "vertices": [[0.275, 0.85, 0.65],[0.275, 1.05, 0.65],[0.475,1.05,0.65],[0.475,0.85,0.65]],
       "normals": [[0, 0, -1],[0, 0, -1],[0, 0, -1],[0, 0, -1]],
       "uvs": [[0,0], [0,1], [1,1], [1,0]],
       "triangles": [[0,1,2],[2,3,0]]
     },
     {
-      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_2.png"}, 
+      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_3.png"}, 
       "vertices": [[0.025, 0.85, 0.65],[0.025, 1.05, 0.65],[0.225,1.05,0.65],[0.225,0.85,0.65]],
       "normals": [[0, 0, -1],[0, 0, -1],[0, 0, -1],[0, 0, -1]],
       "uvs": [[0,0], [0,1], [1,1], [1,0]],
       "triangles": [[0,1,2],[2,3,0]]
     },
     {
-      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_2.png"}, 
+      "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "sprites/Ship_3.png"}, 
       "vertices": [[-0.225, 0.85, 0.65],[-0.225, 1.05, 0.65],[-0.025,1.05,0.65],[-0.025,0.85,0.65]],
       "normals": [[0, 0, -1],[0, 0, -1],[0, 0, -1],[0, 0, -1]],
       "uvs": [[0,0], [0,1], [1,1], [1,0]],
