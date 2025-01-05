@@ -48,6 +48,9 @@ var translatingLeft = false;
 /* animations */
 const RIGHT = UP = 1;
 const LEFT = DOWN = -1;
+const HALF_SPEED = 0.5;
+const FULL_SPEED = 1;
+const DOUBLE_SPEED = 2;
 const MAX_MARCHING_TRANSLATION = 0.25;
 var alienMarchDirection = RIGHT;
 var currentAlienMarch = 0;
@@ -91,7 +94,7 @@ function getJSONFile(url,descr) {
 
 // GAME FUNCTIONS
 
-function translateModelRightLeft(index, direction=1, multiplier=2) {
+function translateModelRightLeft(index, direction=RIGHT, multiplier=DOUBLE_SPEED) {
     // set up needed view params
     var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
     lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
@@ -100,13 +103,13 @@ function translateModelRightLeft(index, direction=1, multiplier=2) {
     vec3.add(inputTriangles[index].translation,inputTriangles[index].translation,vec3.scale(temp,viewRight,direction*viewDelta*multiplier));
 }
 
-function translateModelUpDown(index, direction=1) {
+function translateModelUpDown(index, direction=UP, multiplier=DOUBLE_SPEED) {
     // set up needed view params
     var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
     lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
     viewRight = vec3.normalize(viewRight,vec3.cross(temp,lookAt,Up)); // get view right vector
 
-    vec3.add(inputTriangles[index].translation,inputTriangles[index].translation,vec3.scale(temp,Up,direction*viewDelta*2));
+    vec3.add(inputTriangles[index].translation,inputTriangles[index].translation,vec3.scale(temp,Up,direction*viewDelta*multiplier));
 }
 
 function determineMarchingDirection(currentTranslation, currentDirection) {
@@ -120,7 +123,7 @@ function determineMarchingDirection(currentTranslation, currentDirection) {
 }
 
 function determineFallingDirection(currentDirection) {
-    const randomInt = getRandomIntInclusive(0,15);
+    const randomInt = getRandomIntInclusive(0,50);
 
     if(randomInt === 0) {
         return -1*currentDirection;
@@ -214,8 +217,8 @@ function incrementFall(index) {
         alienAnimationIntervals[index] = null;
     }
     alienAnimationDirections[index] = determineFallingDirection(alienAnimationDirections[index])
-    translateModelRightLeft(index, alienAnimationDirections[index]);
-    translateModelUpDown(index, DOWN);
+    translateModelRightLeft(index, alienAnimationDirections[index], HALF_SPEED);
+    translateModelUpDown(index, DOWN, HALF_SPEED);
     if(interesting) {
         rotateModel(index,Up,1);
     }
@@ -258,18 +261,10 @@ function animateRandomAlienFalling() {
         alienAnimationDirections[selectedAlien] = randomDirection == 1 ? randomDirection : -1;
         alienAnimationDirections[secondAlien] = randomDirection == 1 ? randomDirection : -1;
 
-        // Drop first alien
+        // Drop alien
         alienAnimationIntervals[selectedAlien] = setInterval(() => {
             incrementFall(selectedAlien);
-        }, 100);
-
-        // After delay, drop second alien
-        alienAnimationIntervals[secondAlien] = true; // indicate that alien will be falling
-        setTimeout(() => {
-            alienAnimationIntervals[secondAlien] = setInterval(() => {
-                incrementFall(secondAlien);
-            }, 100);
-        }, 750);
+        }, 20);
     }
 }
 
@@ -299,8 +294,8 @@ function incrementProjectileUp(projectileIndex) {
 }
 
 function incrementProjectileDown(projectileIndex, direction) {
-    translateModelUpDown(projectileIndex, DOWN);
-    translateModelRightLeft(projectileIndex, direction, 1);
+    translateModelUpDown(projectileIndex, DOWN, 1);
+    translateModelRightLeft(projectileIndex, direction, HALF_SPEED);
 
     const isCollision = getIsCollision(projectileIndex, 0, true);
 
@@ -333,25 +328,25 @@ function animateProjectileDown(alienIndex, currentDirection) {
     
     projectileAnimationIntervals[projectileIndex1] = setInterval(() => {
         incrementProjectileDown(projectileIndex1, currentDirection);
-    }, 50);  
+    }, 20);  
 
-    const projectileIndex2 = getAvailableProjectile();
-    inputTriangles[projectileIndex2].translation = vec3.fromValues(xDifference, yDifference, 0);
+    // const projectileIndex2 = getAvailableProjectile();
+    // inputTriangles[projectileIndex2].translation = vec3.fromValues(xDifference, yDifference, 0);
 
-    setTimeout(() => {
-        projectileAnimationIntervals[projectileIndex2] = setInterval(() => {
-            incrementProjectileDown(projectileIndex2, currentDirection);
-        }, 50);  
-    }, 200);
+    // setTimeout(() => {
+    //     projectileAnimationIntervals[projectileIndex2] = setInterval(() => {
+    //         incrementProjectileDown(projectileIndex2, currentDirection);
+    //     }, 20);  
+    // }, 400);
 
-    const projectileIndex3 = getAvailableProjectile();
-    inputTriangles[projectileIndex3].translation = vec3.fromValues(xDifference, yDifference, 0);
+    // const projectileIndex3 = getAvailableProjectile();
+    // inputTriangles[projectileIndex3].translation = vec3.fromValues(xDifference, yDifference, 0);
 
-    setTimeout(() => {
-        projectileAnimationIntervals[projectileIndex3] = setInterval(() => {
-            incrementProjectileDown(projectileIndex3, currentDirection);
-        }, 50);  
-    }, 400);
+    // setTimeout(() => {
+    //     projectileAnimationIntervals[projectileIndex3] = setInterval(() => {
+    //         incrementProjectileDown(projectileIndex3, currentDirection);
+    //     }, 20);  
+    // }, 800);
 }
 
 function getAvailableProjectile() {
@@ -420,11 +415,11 @@ function controlLoop() {
     const currentTranslation = inputTriangles[0].translation[0] || 0;
     if(translatingLeft) {
         if(currentTranslation <= 0.85) {
-            translateModelRightLeft(0,-1,0.5);
+            translateModelRightLeft(0,LEFT,HALF_SPEED);
         }
     } else if(translatingRight) {
         if(currentTranslation >= -0.85) {
-            translateModelRightLeft(0,1,0.5);
+            translateModelRightLeft(0,RIGHT,HALF_SPEED);
         }
     }
 }
