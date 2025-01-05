@@ -50,6 +50,7 @@ const RIGHT = UP = 1;
 const LEFT = DOWN = -1;
 const HALF_SPEED = 0.5;
 const FULL_SPEED = 1;
+const ONE_AND_A_HALF_SPEED = 1.5;
 const DOUBLE_SPEED = 2;
 const MAX_MARCHING_TRANSLATION = 0.25;
 var alienMarchDirection = RIGHT;
@@ -94,7 +95,7 @@ function getJSONFile(url,descr) {
 
 // GAME FUNCTIONS
 
-function translateModelRightLeft(index, direction=RIGHT, multiplier=DOUBLE_SPEED) {
+function translateModelRightLeft(index, direction=RIGHT, multiplier=ONE_AND_A_HALF_SPEED) {
     // set up needed view params
     var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
     lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
@@ -103,7 +104,7 @@ function translateModelRightLeft(index, direction=RIGHT, multiplier=DOUBLE_SPEED
     vec3.add(inputTriangles[index].translation,inputTriangles[index].translation,vec3.scale(temp,viewRight,direction*viewDelta*multiplier));
 }
 
-function translateModelUpDown(index, direction=UP, multiplier=DOUBLE_SPEED) {
+function translateModelUpDown(index, direction=UP, multiplier=ONE_AND_A_HALF_SPEED) {
     // set up needed view params
     var lookAt = vec3.create(), viewRight = vec3.create(), temp = vec3.create(); // lookat, right & temp vectors
     lookAt = vec3.normalize(lookAt,vec3.subtract(temp,Center,Eye)); // get lookat vector
@@ -152,7 +153,7 @@ function marchAliensLeftRight() {
                 inputTriangles[index].translation = vec3.fromValues(currentAlienMarch,0,0);
                 alienAnimationDirections[index] = null;
             }
-            translateModelRightLeft(index, alienMarchDirection);
+            translateModelRightLeft(index, alienMarchDirection, DOUBLE_SPEED);
             inputTriangles[index].scale = !inputTriangles[index].scale;
         } 
     }
@@ -334,24 +335,6 @@ function animateProjectileDown(alienIndex, currentDirection) {
     projectileAnimationIntervals[projectileIndex1] = setInterval(() => {
         incrementProjectileDown(projectileIndex1, currentDirection);
     }, 20);  
-
-    // const projectileIndex2 = getAvailableProjectile();
-    // inputTriangles[projectileIndex2].translation = vec3.fromValues(xDifference, yDifference, 0);
-
-    // setTimeout(() => {
-    //     projectileAnimationIntervals[projectileIndex2] = setInterval(() => {
-    //         incrementProjectileDown(projectileIndex2, currentDirection);
-    //     }, 20);  
-    // }, 400);
-
-    // const projectileIndex3 = getAvailableProjectile();
-    // inputTriangles[projectileIndex3].translation = vec3.fromValues(xDifference, yDifference, 0);
-
-    // setTimeout(() => {
-    //     projectileAnimationIntervals[projectileIndex3] = setInterval(() => {
-    //         incrementProjectileDown(projectileIndex3, currentDirection);
-    //     }, 20);  
-    // }, 800);
 }
 
 function getAvailableProjectile() {
