@@ -63,6 +63,7 @@ var explosionIntervals = [];
 var explosionAnimationIndices = [];
 var spaceBarEnabled = true;
 var alienProjectileEnabled = [];
+var requestId = null;
 
 // ASSIGNMENT HELPER FUNCTIONS
 
@@ -201,7 +202,11 @@ function getIsCollision(index1, index2, isGameOver=false) {
         if(isGameOver) {
             spaceBarEnabled = false;
             setTimeout(() => {
-                window.alert("GAME OVER");
+                if(confirm('Game over. Replay?')){
+                    window.location.reload();  
+                } else {
+                    window.cancelAnimationFrame(requestId);
+                }
             }, EXPLOSION_DURATION);
         }
         return true;
@@ -857,7 +862,7 @@ function renderModels() {
     var pvMatrix = mat4.create(); // hand * proj * view matrices
     var pvmMatrix = mat4.create(); // hand * proj * view * model matrices
     
-    window.requestAnimationFrame(renderModels); // set up frame render callback
+    requestId = window.requestAnimationFrame(renderModels); // set up frame render callback
     
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // clear frame/depth buffers
     
