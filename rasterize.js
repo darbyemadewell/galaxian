@@ -53,11 +53,14 @@ const FULL_SPEED = 1;
 const ONE_AND_A_HALF_SPEED = 1.5;
 const DOUBLE_SPEED = 2;
 const MAX_MARCHING_TRANSLATION = 0.25;
+const EXPLOSION_DURATION = 750;
 var alienMarchDirection = RIGHT;
 var currentAlienMarch = 0;
 var alienAnimationIntervals = [];
 var alienAnimationDirections = [];
 var projectileAnimationIntervals = [];
+var explosionIntervals = [];
+var explosionAnimationIndices = [];
 var spaceBarEnabled = true;
 var alienProjectileEnabled = [];
 
@@ -193,9 +196,13 @@ function getIsCollision(index1, index2, isGameOver=false) {
     }
 
     if(isXCollision && isYCollision) {
+        eliminateAlien(index1);
+        eliminateAlien(index2);
         if(isGameOver) {
-            window.alert("GAME OVER");
-            location.reload();
+            spaceBarEnabled = false;
+            setTimeout(() => {
+                window.alert("GAME OVER");
+            }, EXPLOSION_DURATION);
         }
         return true;
     }
@@ -342,10 +349,27 @@ function isProjectileAvailable(projectileIndex) {
 }
 
 function eliminateAlien(index) {
+    if(index > 16) { // index is projectile, simply remove and return
+        inputTriangles[index].translation = vec3.fromValues(0, -10, 0);
+        return;
+    }
+
     inputTriangles[index].eliminated = true;
     clearInterval(alienAnimationIntervals[index]);
     alienAnimationDirections[index] = null;
-    inputTriangles[index].translation = vec3.fromValues(0, -10, 0);
+    inputTriangles[index].material.texture = "explosion/k2_0001.png";
+
+    explosionIntervals[index] = setInterval(() => {
+        if(explosionAnimationIndices[index] <= 15) {
+            inputTriangles[index].material.texture = `explosion/k2_00${explosionAnimationIndices[index].toString().padStart(2, '0')}.png`;
+            explosionAnimationIndices[index]++;
+        }
+    }, 50);
+
+    setTimeout(() => {
+        clearInterval(explosionIntervals[index]);
+        inputTriangles[index].translation = vec3.fromValues(0, -10, 0);
+    }, EXPLOSION_DURATION);
 }
 
 function handleKeyDown(event) {
@@ -396,6 +420,7 @@ function setupWebGL() {
     for(var index=0; index<17; index++) {
         alienAnimationIntervals[index] = null;
         alienProjectileEnabled[index] = true;
+        explosionAnimationIndices[index] = 2;
     }
 
     setInterval(() => {
@@ -447,7 +472,27 @@ function setupWebGL() {
      } // end catch
 } // end setupWebGL
 
-var listOfTextures = ["sprites/Ship_1.png", "sprites/Ship_5.png", "spr_bullet_3.png", "sprites/Ship_3.png"];
+var listOfTextures = [
+    "sprites/Ship_1.png", 
+    "sprites/Ship_5.png", 
+    "spr_bullet_3.png", 
+    "sprites/Ship_3.png", 
+    "explosion/k2_0001.png", 
+    "explosion/k2_0002.png", 
+    "explosion/k2_0003.png",
+    "explosion/k2_0004.png",
+    "explosion/k2_0005.png",
+    "explosion/k2_0006.png",
+    "explosion/k2_0007.png",
+    "explosion/k2_0008.png",
+    "explosion/k2_0009.png",
+    "explosion/k2_0010.png",
+    "explosion/k2_0011.png",
+    "explosion/k2_0012.png",
+    "explosion/k2_0013.png",
+    "explosion/k2_0014.png",
+    "explosion/k2_0015.png"
+];
 
 //load textures, pixels at first with actual models being loded in
 function loadTextures() {
