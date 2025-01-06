@@ -11,3 +11,9 @@
     top: 0px;
     z-index: 0;
 }
+
+.description {
+    font-family: Helvetica, Arial, sans-serif;
+    position: fixed;
+    left: 550px;
+}
