@@ -172,7 +172,18 @@ function getRandomIntInclusive(min, max) {
     return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled); // The maximum is inclusive and the minimum is inclusive
 }
 
-function getIsCollision(index1, index2, isGameOver=false) {
+function endGame() {
+    spaceBarEnabled = false;
+    setTimeout(() => {
+        if(confirm('Game over. Replay?')){
+            window.location.reload();  
+        } else {
+            window.cancelAnimationFrame(requestId);
+        }
+    }, EXPLOSION_DURATION);
+}
+
+function getIsCollision(index1, index2) {
     // Assuming axis-aligned squares
     // X values
     const leftX1 = inputTriangles[index1].vertices[0][0] + inputTriangles[index1].translation[0];
@@ -196,22 +207,35 @@ function getIsCollision(index1, index2, isGameOver=false) {
         isYCollision = true;
     }
 
-    if(isXCollision && isYCollision) {
+    return isXCollision && isYCollision;
+}
+
+function resetProjectile(index) {
+    clearInterval(projectileAnimationIntervals[index]);
+    inputTriangles[index].translation = vec3.fromValues(0,0,0);
+}
+
+function handleAlienCollision(index1, index2) {
+    if(getIsCollision(index1, index2)) {
         eliminateAlien(index1);
         eliminateAlien(index2);
-        if(isGameOver) {
-            spaceBarEnabled = false;
-            setTimeout(() => {
-                if(confirm('Game over. Replay?')){
-                    window.location.reload();  
-                } else {
-                    window.cancelAnimationFrame(requestId);
-                }
-            }, EXPLOSION_DURATION);
-        }
-        return true;
+        endGame();
     }
-    return false;
+}
+
+function handleProjectileCollision(projectileIndex, alienIndex, isGameOver=false) {
+    if(getIsCollision(projectileIndex, alienIndex)) {
+        // TODO: Rework multiple hits required
+        // inputTriangles[index].hitsTaken++;
+        //     if(inputTriangles[index].hitsTaken >= inputTriangles[index].hitsNeeded) {
+        //         eliminateAlien(index);
+        //     }
+        eliminateAlien(alienIndex);
+        resetProjectile(projectileIndex);
+        if(isGameOver) {
+            endGame();
+        }
+    }
 }
 
 function rotateModel(index,axis,direction) {
@@ -223,7 +247,7 @@ function rotateModel(index,axis,direction) {
 } // end rotate model
 
 function incrementFall(index) {
-    getIsCollision(index, 0, true);
+    handleAlienCollision(index, 0);
     if(inputTriangles[index].center[1] + inputTriangles[index].translation[1] < -0.675) {
         clearInterval(alienAnimationIntervals[index]);
         alienAnimationIntervals[index] = null;
@@ -281,25 +305,11 @@ function incrementProjectileUp(projectileIndex) {
     translateModelUpDown(projectileIndex, UP);
 
     for(var index=1; index<17; index++) {
-        isCollision = getIsCollision(projectileIndex, index);
-        if(isCollision) {
-            inputTriangles[index].hitsTaken++;
-            clearInterval(projectileAnimationIntervals[projectileIndex]);
-            inputTriangles[projectileIndex].translation = vec3.fromValues(0,0,0);
-            // TODO: Rework multiple hits required
-            // if(interesting) {
-            //     if(inputTriangles[index].hitsTaken >= inputTriangles[index].hitsNeeded) {
-            //         eliminateAlien(index);
-            //     }
-            // } else {
-                eliminateAlien(index);
-            // }
-        }
+        handleProjectileCollision(projectileIndex, index);
     }
 
     if (inputTriangles[projectileIndex].center[1] + inputTriangles[projectileIndex].translation[1] > 1.7) {
-        inputTriangles[projectileIndex].translation = vec3.fromValues(0,0,0);
-            clearInterval(projectileAnimationIntervals[projectileIndex]);
+        resetProjectile(projectileIndex);
     }
 }
 
@@ -307,11 +317,10 @@ function incrementProjectileDown(projectileIndex, direction) {
     translateModelUpDown(projectileIndex, DOWN, 1);
     translateModelRightLeft(projectileIndex, direction, HALF_SPEED);
 
-    const isCollision = getIsCollision(projectileIndex, 0, true);
+    handleProjectileCollision(projectileIndex, 0, isGameOver=true);
 
     if (inputTriangles[projectileIndex].center[1] + inputTriangles[projectileIndex].translation[1] < -0.675) {
-        inputTriangles[projectileIndex].translation = vec3.fromValues(0,0,0);
-            clearInterval(projectileAnimationIntervals[projectileIndex]);
+        resetProjectile(projectileIndex);
     }
 }
 
