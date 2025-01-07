@@ -54,6 +54,7 @@ const ONE_AND_A_HALF_SPEED = 1.5;
 const DOUBLE_SPEED = 2;
 const MAX_MARCHING_TRANSLATION = 0.25;
 const EXPLOSION_DURATION = 750;
+const NUM_ALIENS = 16;
 var alienMarchDirection = RIGHT;
 var currentAlienMarch = 0;
 var alienAnimationIntervals = [];
@@ -64,6 +65,7 @@ var explosionAnimationIndices = [];
 var spaceBarEnabled = true;
 var alienProjectileEnabled = [];
 var requestId = null;
+var numAliensEliminated = 0;
 
 // ASSIGNMENT HELPER FUNCTIONS
 
@@ -172,10 +174,10 @@ function getRandomIntInclusive(min, max) {
     return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled); // The maximum is inclusive and the minimum is inclusive
 }
 
-function endGame() {
+function endGame(win=false) {
     spaceBarEnabled = false;
     setTimeout(() => {
-        if(confirm('Game over. Replay?')){
+        if(confirm(win ? 'You win! Play again?' : 'Game over! Try again?')){
             window.location.reload();  
         } else {
             window.cancelAnimationFrame(requestId);
@@ -232,8 +234,8 @@ function handleProjectileCollision(projectileIndex, alienIndex, isGameOver=false
         //     }
         eliminateAlien(alienIndex);
         resetProjectile(projectileIndex);
-        if(isGameOver) {
-            endGame();
+        if(isGameOver || numAliensEliminated === NUM_ALIENS) {
+            endGame(numAliensEliminated === NUM_ALIENS);
         }
     }
 }
@@ -363,12 +365,12 @@ function isProjectileAvailable(projectileIndex) {
 }
 
 function eliminateAlien(index) {
-    if(index > 16) { // index is projectile, simply remove and return
-        inputTriangles[index].translation = vec3.fromValues(0, -10, 0);
+    if(inputTriangles[index].eliminated) {
         return;
     }
 
     inputTriangles[index].eliminated = true;
+    numAliensEliminated++;
     clearInterval(alienAnimationIntervals[index]);
     alienAnimationDirections[index] = null;
     inputTriangles[index].material.texture = "explosion/k2_0001.png";
@@ -450,7 +452,7 @@ function setupWebGL() {
         if (randomInt == 0) {
             animateRandomAlienFalling();
         }
-    }, 2000);
+    }, 1000);
     
     // Set up keys
     document.onkeydown = handleKeyDown; // call this when key pressed
