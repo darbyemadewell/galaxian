@@ -251,8 +251,7 @@ function rotateModel(index,axis,direction) {
 function incrementFall(index) {
     handleAlienCollision(index, 0);
     if(inputTriangles[index].center[1] + inputTriangles[index].translation[1] < -0.675) {
-        clearInterval(alienAnimationIntervals[index]);
-        alienAnimationIntervals[index] = null;
+        clearAlienAnimation(index);
     }
     alienAnimationDirections[index] = determineFallingDirection(alienAnimationDirections[index])
     translateModelRightLeft(index, alienAnimationDirections[index], HALF_SPEED);
@@ -264,7 +263,7 @@ function incrementFall(index) {
         animateProjectileDown(index, alienAnimationDirections[index]);
         setTimeout(() => {
             alienProjectileEnabled[index] = true;
-        }, 2000)
+        }, 1000)
     }
 }
 
@@ -364,15 +363,7 @@ function isProjectileAvailable(projectileIndex) {
     return inputTriangles[projectileIndex].translation[1] === 0;
 }
 
-function eliminateAlien(index) {
-    if(inputTriangles[index].eliminated) {
-        return;
-    }
-
-    inputTriangles[index].eliminated = true;
-    numAliensEliminated++;
-    clearInterval(alienAnimationIntervals[index]);
-    alienAnimationDirections[index] = null;
+function startExplosionAnimation(index) {
     inputTriangles[index].material.texture = "explosion/k2_0001.png";
 
     explosionIntervals[index] = setInterval(() => {
@@ -386,6 +377,24 @@ function eliminateAlien(index) {
         clearInterval(explosionIntervals[index]);
         inputTriangles[index].translation = vec3.fromValues(0, -10, 0);
     }, EXPLOSION_DURATION);
+}
+
+function clearAlienAnimation(index) {
+    clearInterval(alienAnimationIntervals[index]);
+    alienAnimationDirections[index] = null;
+}
+
+function eliminateAlien(index) {
+    // TODO: Fix to remove this check
+    if(inputTriangles[index].eliminated) {
+        return;
+    }
+
+    inputTriangles[index].eliminated = true;
+    numAliensEliminated++;    
+
+    clearAlienAnimation(index);
+    startExplosionAnimation(index);
 }
 
 function handleKeyDown(event) {
