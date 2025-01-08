@@ -227,12 +227,12 @@ function handleAlienCollision(index1, index2) {
 
 function handleProjectileCollision(projectileIndex, alienIndex, isGameOver=false) {
     if(getIsCollision(projectileIndex, alienIndex)) {
-        // TODO: Rework multiple hits required
-        // inputTriangles[index].hitsTaken++;
-        //     if(inputTriangles[index].hitsTaken >= inputTriangles[index].hitsNeeded) {
-        //         eliminateAlien(index);
-        //     }
-        eliminateAlien(alienIndex);
+        inputTriangles[alienIndex].hitsTaken++;
+        if(inputTriangles[alienIndex].hitsTaken >= inputTriangles[alienIndex].hitsNeeded) {
+            eliminateAlien(alienIndex);
+        } else {
+            inputTriangles[alienIndex].material.texture = listOfTextures[inputTriangles[alienIndex].hitsTaken];
+        }
         resetProjectile(projectileIndex);
         if(isGameOver || numAliensEliminated === NUM_ALIENS) {
             endGame(numAliensEliminated === NUM_ALIENS);
@@ -499,9 +499,9 @@ function setupWebGL() {
 
 var listOfTextures = [
     "sprites/Ship_1.png", 
+    "sprites/Ship_3.png", 
     "sprites/Ship_5.png", 
     "spr_bullet_3.png", 
-    "sprites/Ship_3.png", 
     "explosion/k2_0001.png", 
     "explosion/k2_0002.png", 
     "explosion/k2_0003.png",
@@ -602,7 +602,7 @@ function loadModels() {
                 }
                 inputTriangles[whichSet].hitsTaken = 0;
                 if(whichSet >= 13 && whichSet <= 16) {
-                    inputTriangles[whichSet].hitsNeeded = 3;
+                    inputTriangles[whichSet].hitsNeeded = 2;
                 } else {
                     inputTriangles[whichSet].hitsNeeded = 1;
                 }
