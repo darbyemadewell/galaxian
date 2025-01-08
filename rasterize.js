@@ -117,7 +117,7 @@ function translateModelUpDown(index, direction=UP, multiplier=ONE_AND_A_HALF_SPE
     vec3.add(inputTriangles[index].translation,inputTriangles[index].translation,vec3.scale(temp,Up,direction*viewDelta*multiplier));
 }
 
-function determineMarchingDirection(currentTranslation, currentDirection) {
+function getAlienMarchDirection(currentTranslation, currentDirection) {
     if(currentDirection == RIGHT && currentTranslation <= -1*MAX_MARCHING_TRANSLATION) {
         return LEFT;
     } else if (currentDirection == LEFT && currentTranslation >= MAX_MARCHING_TRANSLATION) {
@@ -127,7 +127,7 @@ function determineMarchingDirection(currentTranslation, currentDirection) {
     }
 }
 
-function determineFallingDirection(currentDirection) {
+function getAlienFallingDirection(currentDirection) {
     const randomInt = getRandomIntInclusive(0,50);
 
     if(randomInt === 0) {
@@ -139,17 +139,17 @@ function determineFallingDirection(currentDirection) {
 
 function marchAliensLeftRight() {
     currentAlienMarch += -1 * alienMarchDirection * DOUBLE_SPEED * viewDelta;
-    alienMarchDirection = determineMarchingDirection(currentAlienMarch, alienMarchDirection);
+    alienMarchDirection = getAlienMarchDirection(currentAlienMarch, alienMarchDirection);
 
     for(var index=1; index<16; index++) {
-        if(isFalling(index) === false) {
+        if(isAlienFalling(index) === false) {
             checkAlienMarch = inputTriangles[index].translation[0];
             break;
         }
     }
     for(var index = 1; index <= 16; index++) {
-        if(isFalling(index) === false && !isEliminated(index)) {
-            if(isFalling(index) === false && alienAnimationDirections[index] !== null) {
+        if(isAlienFalling(index) === false && !isAlienEliminated(index)) {
+            if(isAlienFalling(index) === false && alienAnimationDirections[index] !== null) {
                 inputTriangles[index].translation = vec3.fromValues(currentAlienMarch,0,0);
                 alienAnimationDirections[index] = null;
             }
@@ -159,11 +159,11 @@ function marchAliensLeftRight() {
     }
 }
 
-function isFalling(index) {
+function isAlienFalling(index) {
     return alienAnimationIntervals[index] !== null;
 }
 
-function isEliminated(index) {
+function isAlienEliminated(index) {
     return inputTriangles[index].eliminated;
 }
 
@@ -248,12 +248,12 @@ function rotateModel(index,axis,direction) {
     vec3.transformMat4(inputTriangles[index].yAxis,inputTriangles[index].yAxis,newRotation); // rotate model y axis tip
 } // end rotate model
 
-function incrementFall(index) {
+function incrementAlienFall(index) {
     handleAlienCollision(index, 0);
     if(inputTriangles[index].center[1] + inputTriangles[index].translation[1] < -0.675) {
         clearAlienAnimation(index);
     }
-    alienAnimationDirections[index] = determineFallingDirection(alienAnimationDirections[index])
+    alienAnimationDirections[index] = getAlienFallingDirection(alienAnimationDirections[index])
     translateModelRightLeft(index, alienAnimationDirections[index], HALF_SPEED);
     translateModelUpDown(index, DOWN, HALF_SPEED);
 
@@ -269,13 +269,13 @@ function incrementFall(index) {
 
 function animateRandomAlienFalling() {
     const selectedAlien = getRandomIntInclusive(1,16);
-    const alreadyAnimated = isFalling(selectedAlien);
+    const alreadyAnimated = isAlienFalling(selectedAlien);
     const randomDirection = Math.random(0, 10) % 2;
 
     // Get count of already animated aliens
     var numAlreadyAnimated = 0;
     for(var index=0; index<17; index++) {
-        if(isFalling(index) === true) {
+        if(isAlienFalling(index) === true) {
             numAlreadyAnimated++;
         }
     }
@@ -286,7 +286,7 @@ function animateRandomAlienFalling() {
         // Get a second random alien that isn't already animated
         while(secondAlien === 0) {
             const randomSecondAlien = getRandomIntInclusive(1,16);
-            if(randomSecondAlien !== selectedAlien && isFalling(randomSecondAlien) === false) {
+            if(randomSecondAlien !== selectedAlien && isAlienFalling(randomSecondAlien) === false) {
                 secondAlien = randomSecondAlien;
             }
         }
@@ -297,7 +297,7 @@ function animateRandomAlienFalling() {
 
         // Drop alien
         alienAnimationIntervals[selectedAlien] = setInterval(() => {
-            incrementFall(selectedAlien);
+            incrementAlienFall(selectedAlien);
         }, 20);
     }
 }
