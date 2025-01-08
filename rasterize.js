@@ -149,10 +149,7 @@ function marchAliensLeftRight() {
     }
     for(var index = 1; index <= 16; index++) {
         if(isAlienFalling(index) === false && !isAlienEliminated(index)) {
-            if(isAlienFalling(index) === false && alienAnimationDirections[index] !== null) {
-                inputTriangles[index].translation = vec3.fromValues(currentAlienMarch,0,0);
-                alienAnimationDirections[index] = null;
-            }
+            resetAlienPosition(index);
             translateModelRightLeft(index, alienMarchDirection, DOUBLE_SPEED);
             inputTriangles[index].scale = !inputTriangles[index].scale;
         } 
@@ -281,19 +278,8 @@ function animateRandomAlienFalling() {
     }
 
     if(alreadyAnimated === false && numAlreadyAnimated <= 4) {
-        var secondAlien = 0;
-
-        // Get a second random alien that isn't already animated
-        while(secondAlien === 0) {
-            const randomSecondAlien = getRandomIntInclusive(1,16);
-            if(randomSecondAlien !== selectedAlien && isAlienFalling(randomSecondAlien) === false) {
-                secondAlien = randomSecondAlien;
-            }
-        }
-
         // Set direction
         alienAnimationDirections[selectedAlien] = randomDirection == 1 ? randomDirection : -1;
-        alienAnimationDirections[secondAlien] = randomDirection == 1 ? randomDirection : -1;
 
         // Drop alien
         alienAnimationIntervals[selectedAlien] = setInterval(() => {
@@ -303,7 +289,7 @@ function animateRandomAlienFalling() {
 }
 
 function incrementProjectileUp(projectileIndex) {
-    translateModelUpDown(projectileIndex, UP);
+    translateModelUpDown(projectileIndex, UP, 3);
 
     for(var index=1; index<17; index++) {
         handleProjectileCollision(projectileIndex, index);
@@ -381,7 +367,12 @@ function startExplosionAnimation(index) {
 
 function clearAlienAnimation(index) {
     clearInterval(alienAnimationIntervals[index]);
+    alienAnimationIntervals[index] = null;
     alienAnimationDirections[index] = null;
+}
+
+function resetAlienPosition(index) {
+    inputTriangles[index].translation = vec3.fromValues(currentAlienMarch,0,0);
 }
 
 function eliminateAlien(index) {
